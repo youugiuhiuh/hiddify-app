@@ -1,0 +1,40 @@
+name: Sync Upstream
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 1 * *'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+      - name: Add upstream
+        run: |
+          git remote add upstream https://github.com/hiddify/hiddify-app.git
+
+      - name: Fetch upstream
+        run: |
+          git fetch upstream
+
+      - name: Merge
+        run: |
+          git checkout ${{ github.event.repository.default_branch }}
+          git merge upstream/${{ github.event.repository.default_branch }} --no-edit
+
+      - name: Push
+        run: |
+          git push
